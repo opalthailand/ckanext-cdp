@@ -1,0 +1,2 @@
+[ckan.plugins]
+cdp = ckanext.cdp.plugin:CdpPlugin

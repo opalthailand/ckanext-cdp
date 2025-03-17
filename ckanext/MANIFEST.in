@@ -1,0 +1,8 @@
+include README.rst
+include LICENSE
+include requirements.txt
+include ckanext/thai_gdc/ckan_dataset.json
+recursive-include ckanext/cdp *.html *.json *.js *.less *.css *.mo *.yml
+recursive-include ckanext/cdp/migration *.ini *.py *.mako
+recursive-include ckanext/cdp/templates *
+recursive-include ckanext/cdp/public *
