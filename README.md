@@ -53,7 +53,7 @@ To install **ckanext-cdp**, follow these steps:
    If CKAN is deployed with Apache on Ubuntu, reload the service:
 
    ```bash
-   sudo service apache2 reload
+   sudo supervisorctl reload
    ```
 
 ## Usage
