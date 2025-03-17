@@ -27,6 +27,7 @@ class CdpPlugin(plugins.SingletonPlugin):
 
         # Set the dataset schema to the merged schema file.
         config_['scheming.dataset_schemas'] = 'ckanext.cdp:ckan_dataset_cdp.json'
+        config_['ckan.auth.allow_admin_collaborators'] = 'true'
 
 
     # ITemplateHelpers
