@@ -42,7 +42,7 @@ To install **ckanext-cdp**, follow these steps:
    sudo vi /etc/ckan/default/ckan.ini
    ```
 
-   Locate the `ckan.plugins` setting and add `thai_gdc cdp` to the list. For example:
+   Locate the `ckan.plugins` setting and add `cdp` right after `thai_gdc` to the list. For example:
 
    ```
    ckan.plugins = ... thai_gdc cdp ...
