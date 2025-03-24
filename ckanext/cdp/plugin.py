@@ -151,6 +151,7 @@ class CdpPlugin(plugins.SingletonPlugin):
                 result = package_collaborator_delete(context, data)
             except Exception:
                 # If no collaborator exists, ignore the error.
+                res_dict.pop('data_cdp', None)
                 result = None
         
         return res_dict
