@@ -136,29 +136,20 @@ class CdpPlugin(plugins.SingletonPlugin):
         user_id = user.id
         package_id = res_dict.get('id')
 
-        if res_dict.get('data_cdp') == 'yes':
+        data = {
+            'id': package_id,
+            'user_id': user_id,
+            'capacity': 'editor'
+        }
+        result = package_collaborator_create(context, data)
+
+        if res_dict.get('data_cdp') != 'yes':
             data = {
                 'id': package_id,
-                'user_id': user_id,
-                'capacity': 'editor'
+                'user_id': user_id
             }
-            result = package_collaborator_create(context, data)
+            result = package_collaborator_delete(context, data)
 
-        elif res_dict.get('data_cdp') == 'no':
-            collaborators = package_collaborator_list(context, {'id': package_id})
-            is_collab = any(collab['user_id'] == user_id and collab['capacity'] == 'editor' for collab in collaborators)
-
-            if is_collab:
-                data = {
-                    'id': package_id,
-                    'user_id': user_id
-                }
-                result = package_collaborator_delete(context, data)
-
-            else:
-                # remove data_cdp field
-                res_dict.pop('data_cdp', None) 
-        
         return res_dict    
 
     def after_update(self, context, pkg_dict):
