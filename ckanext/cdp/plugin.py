@@ -13,7 +13,7 @@ class CdpPlugin(plugins.SingletonPlugin):
       - Configures custom templates and assets.
       - Sets a merged dataset schema which includes a custom field 'data_cdp'.
       - Modifies dataset creation/update behavior to add or remove a collaborator 
-        (user 'user2') based on the value of the 'data_cdp' field.
+        (user 'cdp_user') based on the value of the 'data_cdp' field.
     """
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.ITemplateHelpers)
@@ -128,10 +128,10 @@ class CdpPlugin(plugins.SingletonPlugin):
         """
         Callback executed after a dataset is created.
         
-        If the custom field 'data_cdp' is set to 'yes', this function adds user 'user2'
+        If the custom field 'data_cdp' is set to 'yes', this function adds user 'cdp_user'
         as an editor collaborator to the dataset. If the field is 'no', it removes the collaborator.
         """
-        user = model.User.get("user2")
+        user = model.User.get("cdp_user")
         user_id = user.id
         package_id = res_dict.get('id')
 
@@ -156,9 +156,9 @@ class CdpPlugin(plugins.SingletonPlugin):
         Callback executed after a dataset is updated.
         
         Similar to after_create, it checks the 'data_cdp' field and adds or removes
-        user 'user2' as a collaborator accordingly.
+        user 'cdp_user' as a collaborator accordingly.
         """
-        user = model.User.get("user2")
+        user = model.User.get("cdp_user")
         user_id = user.id
         package_id = pkg_dict.get('id')
 
