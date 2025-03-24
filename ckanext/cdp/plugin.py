@@ -154,6 +154,10 @@ class CdpPlugin(plugins.SingletonPlugin):
                     'user_id': user_id
                 }
                 result = package_collaborator_delete(context, data)
+
+            else:
+                # remove data_cdp field
+                res_dict.pop('data_cdp', None) 
         
         return res_dict    
 
