@@ -129,25 +129,19 @@ class CdpPlugin(plugins.SingletonPlugin):
         Callback executed after a dataset is created.
         
         If the custom field 'data_cdp' is set to 'yes', this function adds user 'cdp_user'
-        as an editor collaborator to the dataset. If the field is 'no', it removes the collaborator.
+        as an editor collaborator to the dataset.
         """
-        user = model.User.get("cdp_user")
-        user_id = user.id
-        package_id = res_dict.get('id')
+        if res_dict.get('data_cdp') == 'yes':
+            user = model.User.get("cdp_user")
+            user_id = user.id
+            package_id = res_dict.get('id')
 
-        data = {
-            'id': package_id,
-            'user_id': user_id,
-            'capacity': 'editor'
-        }
-        result = package_collaborator_create(context, data)
-
-        if res_dict.get('data_cdp') != 'yes':
             data = {
                 'id': package_id,
-                'user_id': user_id
+                'user_id': user_id,
+                'capacity': 'editor'
             }
-            result = package_collaborator_delete(context, data)
+            result = package_collaborator_create(context, data)
 
         return res_dict    
 
