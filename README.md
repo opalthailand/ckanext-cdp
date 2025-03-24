@@ -1,6 +1,10 @@
 # ckanext-cdp
 
+<<<<<<< HEAD
 **ckanext-cdp** is a CKAN extension that adds a custom dataset field called **data_cdp**. This field allows users to indicate whether they consent to send their dataset to a CDP (Collaborative Data Platform) project. Based on the user’s selection, the extension automatically manages dataset collaborator privileges for a predefined user (user "`cdp_user`") by either granting editor rights or removing them.
+=======
+**ckanext-cdp** is a CKAN extension that adds a custom dataset field called **data_cdp**. This field allows users to indicate whether they consent to send their dataset to the CDP project. Based on the user’s selection, the extension automatically manages dataset collaborator privileges for a predefined user (user "`user2`") by either granting editor rights or removing them.
+>>>>>>> 5a534fe845048d5a75fea4558f2e9e4af3bbc842
 
 ## Requirements
 
@@ -42,7 +46,7 @@ To install **ckanext-cdp**, follow these steps:
    sudo vi /etc/ckan/default/ckan.ini
    ```
 
-   Locate the `ckan.plugins` setting and add `thai_gdc cdp` to the list. For example:
+   Locate the `ckan.plugins` setting and add `cdp` right after `thai_gdc` to the list. For example:
 
    ```
    ckan.plugins = ... thai_gdc cdp ...
@@ -50,7 +54,7 @@ To install **ckanext-cdp**, follow these steps:
 
 5. **Restart CKAN:**
 
-   If CKAN is deployed with Apache on Ubuntu, reload the service:
+   If CKAN is deployed on Ubuntu, reload the service:
 
    ```bash
    sudo supervisorctl reload
