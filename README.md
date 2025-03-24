@@ -1,10 +1,6 @@
 # ckanext-cdp
 
-<<<<<<< HEAD
 **ckanext-cdp** is a CKAN extension that adds a custom dataset field called **data_cdp**. This field allows users to indicate whether they consent to send their dataset to a CDP (Collaborative Data Platform) project. Based on the user’s selection, the extension automatically manages dataset collaborator privileges for a predefined user (user "`cdp_user`") by either granting editor rights or removing them.
-=======
-**ckanext-cdp** is a CKAN extension that adds a custom dataset field called **data_cdp**. This field allows users to indicate whether they consent to send their dataset to the CDP project. Based on the user’s selection, the extension automatically manages dataset collaborator privileges for a predefined user (user "`user2`") by either granting editor rights or removing them.
->>>>>>> 5a534fe845048d5a75fea4558f2e9e4af3bbc842
 
 ## Requirements
 
