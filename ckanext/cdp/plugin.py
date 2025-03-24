@@ -6,7 +6,6 @@ import codecs
 from ckan import model
 from ckan.logic.action.create import package_collaborator_create
 from ckan.logic.action.delete import package_collaborator_delete
-from ckan.logic.action.get import package_collaborator_list
 
 class CdpPlugin(plugins.SingletonPlugin):
     """
