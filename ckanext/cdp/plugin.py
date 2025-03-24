@@ -6,6 +6,7 @@ import codecs
 from ckan import model
 from ckan.logic.action.create import package_collaborator_create
 from ckan.logic.action.delete import package_collaborator_delete
+from ckan.logic.action.get import package_collaborator_list
 
 class CdpPlugin(plugins.SingletonPlugin):
     """
@@ -142,19 +143,19 @@ class CdpPlugin(plugins.SingletonPlugin):
                 'capacity': 'editor'
             }
             result = package_collaborator_create(context, data)
+
         elif res_dict.get('data_cdp') == 'no':
-            data = {
-                'id': package_id,
-                'user_id': user_id
-            }
-            try:
+            collaborators = package_collaborator_list(context, {'id': package_id})
+            is_collab = any(collab['user_id'] == user_id and collab['capacity'] == 'editor' for collab in collaborators)
+
+            if is_collab:
+                data = {
+                    'id': package_id,
+                    'user_id': user_id
+                }
                 result = package_collaborator_delete(context, data)
-            except Exception:
-                # If no collaborator exists, ignore the error.
-                res_dict.pop('data_cdp', None)
-                result = None
         
-        return res_dict
+        return res_dict    
 
     def after_update(self, context, pkg_dict):
         """
