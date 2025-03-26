@@ -1,75 +1,55 @@
+# -*- coding: utf-8 -*-
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
-import json
-import pkg_resources
-import codecs
-from ckan import model
+# *** เพิ่ม import สำหรับ actions ที่จำเป็น ***
+from ckan import model # Import model เพื่อใช้หา User
 from ckan.logic.action.create import package_collaborator_create
 from ckan.logic.action.delete import package_collaborator_delete
 
+
 class CdpPlugin(plugins.SingletonPlugin):
-    """
-    A CKAN extension plugin that:
-      - Configures custom templates and assets.
-      - Sets a merged dataset schema which includes a custom field 'data_cdp'.
-      - Modifies dataset creation/update behavior to add or remove a collaborator 
-        (user 'cdp_user') based on the value of the 'data_cdp' field.
-    """
     plugins.implements(plugins.IConfigurer)
-    plugins.implements(plugins.ITemplateHelpers)
+    # เพิ่ม implements IDatasetForm
     plugins.implements(plugins.IDatasetForm)
+    # เพิ่ม implements IPackageController
     plugins.implements(plugins.IPackageController, inherit=True)
 
-    # IConfigurer implementation
+    # IConfigurer
     def update_config(self, config_):
-        """
-        Update CKAN configuration by:
-          - Adding template, public, and asset directories.
-          - Including extra template directories if provided.
-          - Setting the scheming dataset schema to the merged schema file.
-          - Allowing dataset collaborators.
-        """
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_public_directory(config_, 'public')
-        toolkit.add_resource('assets', 'ckanext-cdp')
+        toolkit.add_resource('fanstatic','cdp')
 
-        # Add all template directories from the config's extra_template_paths.
-        for template_directory in config_.get('extra_template_paths', '').split(','):
-            if template_directory:
-                toolkit.add_template_directory(config_, template_directory)
-
-        # Set the dataset schema to the merged schema file.
-        config_['scheming.dataset_schemas'] = 'ckanext.cdp:ckan_dataset_cdp.json'
+        # เพิ่มบรรทัดนี้เพื่อเปิดใช้งาน Collaborators
         config_['ckan.auth.allow_dataset_collaborators'] = 'true'
-
-    # ITemplateHelpers implementation
-    def get_helpers(self):
-        """
-        Return a dictionary of custom helper functions for use in templates.
-        Currently, no additional helpers are provided.
-        """
-        return {
-            # Add any helper functions here if needed.
-        }
+        # ตั้งค่าให้ Scheming ใช้ dataset schema ใหม่ที่ merge แล้ว
+        config_['scheming.dataset_schemas'] = 'ckanext.cdp:ckan_dataset_cdp.json'
 
     # IDatasetForm implementation helper function
     def _modify_package_schema(self, schema):
         """
-        Modify the dataset form schema by adding validation and conversion
-        rules for the custom 'data_cdp' field.
+        ปรับเปลี่ยน dataset form schema โดยเพิ่มกฎ validation/conversion
+        สำหรับฟิลด์ 'data_cdp' ที่เรากำหนดเอง
         """
+        # ตรวจสอบว่า dataset_fields มีอยู่จริงก่อน update
+        if 'dataset_fields' not in schema:
+             schema['dataset_fields'] = {} # สร้าง dict ว่างถ้ายังไม่มี
+
         schema['dataset_fields'].update({
             'data_cdp': [
-                toolkit.get_validator('ignore_missing'),
-                toolkit.get_converter('convert_to_extras')
+                toolkit.get_validator('ignore_missing'), # ไม่บังคับกรอก
+                toolkit.get_converter('convert_to_extras') # แปลงไปเก็บใน extras field
             ]
         })
         return schema
 
+    # --- Implement methods ของ IDatasetForm ---
+    # เราต้อง override method เหล่านี้เพื่อเรียก _modify_package_schema
+    # และเพื่อให้แน่ใจว่า scheming ใช้ schema ที่ถูกต้อง
+
     def create_package_schema(self):
         """
-        Override the default package schema used during dataset creation.
-        Calls the parent method and then applies modifications.
+        Override schema ที่ใช้ตอนสร้าง dataset
         """
         schema = super(CdpPlugin, self).create_package_schema()
         schema = self._modify_package_schema(schema)
@@ -77,8 +57,7 @@ class CdpPlugin(plugins.SingletonPlugin):
 
     def update_package_schema(self):
         """
-        Override the default package schema used during dataset updates.
-        Calls the parent method and then applies modifications.
+        Override schema ที่ใช้ตอนแก้ไข dataset
         """
         schema = super(CdpPlugin, self).update_package_schema()
         schema = self._modify_package_schema(schema)
@@ -86,8 +65,8 @@ class CdpPlugin(plugins.SingletonPlugin):
 
     def show_package_schema(self):
         """
-        Override the package schema used when displaying a dataset.
-        Modifies the schema to convert data from extras and ignore missing values.
+        Override schema ที่ใช้ตอนแสดงผล dataset
+        ต้องแปลงค่าจาก extras กลับมาแสดง
         """
         schema = super(CdpPlugin, self).show_package_schema()
         schema['dataset_fields'].update({
@@ -98,17 +77,20 @@ class CdpPlugin(plugins.SingletonPlugin):
         })
         return schema
 
+    # --- Methods อื่นๆ ของ IDatasetForm ---
     def is_fallback(self):
         """
-        Indicate that this plugin is not a fallback for any dataset type.
+        ระบุว่า plugin นี้ไม่ใช่ fallback สำหรับ dataset type ใดๆ
         """
+        # ต้อง return False เพื่อให้ scheming ทำงานกับ type 'dataset' ปกติ
         return False
 
     def package_types(self):
         """
-        Return a list of dataset types this plugin is applicable to.
-        An empty list means it applies to all types.
+        ระบุ dataset types ที่ plugin นี้จะทำงานด้วย
+        ถ้า return list ว่าง หมายถึงทำงานกับทุก type ที่ scheming จัดการ
         """
+        # ให้ scheming จัดการ type ตาม schema ที่เรากำหนด
         return []
 
     def get_resource_form(self, package_type=None):
@@ -127,53 +109,67 @@ class CdpPlugin(plugins.SingletonPlugin):
     def after_create(self, context, res_dict):
         """
         Callback executed after a dataset is created.
-        
+
         If the custom field 'data_cdp' is set to 'yes', this function adds user 'cdp_user'
         as an editor collaborator to the dataset.
         """
+        # ดึงข้อมูล user object จากชื่อ 'cdp_user' และดึง package ID จาก dictionary ผลลัพธ์ของการสร้าง dataset
         user = model.User.get("cdp_user")
         user_id = user.id
         package_id = res_dict.get('id')
 
-        data = {
-            'id': package_id,
-            'user_id': user_id,
-            'capacity': 'editor'
+        # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_create
+        data_create = {
+            'id': package_id,      # ID ของ dataset ที่จะเพิ่ม collaborator
+            'user_id': user_id,    # ID ของ user ที่จะเพิ่มเป็น collaborator
+            'capacity': 'editor'   # ระดับสิทธิ์ของ collaborator
         }
-        result = package_collaborator_create(context, data)
+        # เรียก action เพื่อเพิ่ม collaborator เข้าไปใน dataset; ผลลัพธ์จะถูกเก็บใน result_create
+        result_create = package_collaborator_create(context.copy(), data_create)
 
+        # ตรวจสอบว่าค่า res_dict.get('data_cdp') ไม่ใช่ 'yes'
         if res_dict.get('data_cdp') != 'yes':
-            data = {
-                'id': package_id,
-                'user_id': user_id
+            # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_delete
+            data_delete = {
+                'id': package_id,      # ID ของ dataset ที่จะลบ collaborator ออก
+                'user_id': user_id     # ID ของ user ที่จะถูกลบออกจากการเป็น collaborator
             }
-            result = package_collaborator_delete(context, data)
+            # เรียก action เพื่อลบ collaborator ออกจาก dataset; ผลลัพธ์จะถูกเก็บใน result_delete
+            result_delete = package_collaborator_delete(context.copy(), data_delete)
 
-        return res_dict    
+        # คืนค่า dictionary ผลลัพธ์ของการสร้าง dataset กลับไป
+        return res_dict
 
     def after_update(self, context, pkg_dict):
         """
         Callback executed after a dataset is updated.
-        
+
         Similar to after_create, it checks the 'data_cdp' field and adds or removes
         user 'cdp_user' as a collaborator accordingly.
         """
+        # ดึงข้อมูล user object จากชื่อ 'cdp_user' และดึง package ID จาก dictionary ผลลัพธ์ของการสร้าง dataset
         user = model.User.get("cdp_user")
         user_id = user.id
         package_id = pkg_dict.get('id')
 
-        data = {
-            'id': package_id, 
-            'user_id': user_id,
-            'capacity': 'editor'
+        # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_create
+        data_create = {
+            'id': package_id,      # ID ของ dataset ที่จะเพิ่ม collaborator
+            'user_id': user_id,    # ID ของ user ที่จะเพิ่มเป็น collaborator
+            'capacity': 'editor'   # ระดับสิทธิ์ของ collaborator
         }
-        result = package_collaborator_create(context, data)
+        # เรียก action เพื่อเพิ่ม collaborator เข้าไปใน dataset; ผลลัพธ์จะถูกเก็บใน result_create
+        result_create = package_collaborator_create(context, data_create)
 
+        # ตรวจสอบว่าค่า pkg_dict.get('data_cdp') ไม่ใช่ 'yes'
         if pkg_dict.get('data_cdp') != 'yes':
-            data = {
-                'id': package_id,
-                'user_id': user_id
+            # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_delete
+            data_delete = {
+                'id': package_id,      # ID ของ dataset ที่จะลบ collaborator ออก
+                'user_id': user_id     # ID ของ user ที่จะถูกลบออกจากการเป็น collaborator
             }
-            result = package_collaborator_delete(context, data)
-        
+            # เรียก action เพื่อลบ collaborator ออกจาก dataset; ผลลัพธ์จะถูกเก็บใน result_delete
+            result_delete = package_collaborator_delete(context, data_delete)
+
+        # คืนค่า dictionary ข้อมูล dataset ที่อัปเดตแล้วกลับไป
         return pkg_dict

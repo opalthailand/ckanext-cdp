@@ -1,0 +1,14 @@
+# cdp-js:
+#   filter: rjsmin
+#   output: ckanext-cdp/%(version)s-cdp.js
+#   contents:
+#     - js/cdp.js
+#   extra:
+#     preload:
+#       - base/main
+
+# cdp-css:
+#   filter: cssrewrite
+#   output: ckanext-cdp/%(version)s-cdp.css
+#   contents:
+#     - css/cdp.css

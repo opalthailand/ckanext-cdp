@@ -1,64 +1,103 @@
+# -*- coding: utf-8 -*-
+# Always prefer setuptools over distutils
 from setuptools import setup, find_packages
-from codecs import open
+from codecs import open  # To use a consistent encoding
 from os import path
-import json
 
-# Generate the merged schema file when setting up the package.
+# Import และเรียกใช้ฟังก์ชันเพื่อสร้างไฟล์ schema ตอน setup
 from ckanext.cdp.cdp_schema import save_merged_schema
 save_merged_schema()
 
-# Get the absolute path to the directory where this setup.py resides.
 here = path.abspath(path.dirname(__file__))
 
-# Read the README file to use as the long package description.
-try:
-    with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-        long_description = f.read()
-except IOError:
-    long_description = ''
+# Get the long description from the relevant file
+with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
-    # Basic metadata about the package.
-    name='ckanext-cdp',
+    name='''ckanext-cdp''',
+
+    # Versions should comply with PEP440.  For a discussion on single-sourcing
+    # the version across setup.py and the project code, see
+    # http://packaging.python.org/en/latest/tutorial.html#version
     version='0.0.1',
-    description='A sample CKAN extension for demonstration purposes',
+
+    description='''ckanext-cdp is a CKAN extension that adds a custom dataset field called data_cdp. This field allows users to indicate whether they consent to send their dataset to the CDP project. Based on the user’s selection, the extension automatically manages dataset collaborator privileges for a predefined user (user "cdp_user") by either granting editor rights or removing them.''',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://github.com/opend-team/ckanext-cdp',
-    author='opend team',
-    author_email='contact@example.com',
+
+    # The project's main homepage.
+    url='https://github.com/Big Data Institute/ckanext-cdp',
+
+    # Author details
+    author='''Thanakorn Thaminkaew''',
+    author_email='''thanakorn.th@bdi.or.th''',
+
+    # Choose your license
     license='AGPL',
+
+    # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
+        # How mature is this project? Common values are
+        # 3 - Alpha
+        # 4 - Beta
+        # 5 - Production/Stable
         'Development Status :: 4 - Beta',
+
+        # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
+
+        # Specify the Python versions you support here. In particular, ensure
+        # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python :: 2.7',
     ],
-    keywords='CKAN',
-    # Automatically discover all packages in the project except those excluded.
+
+
+    # What does your project relate to?
+    keywords='''CKAN''',
+
+    # You can just specify the packages manually here if your project is
+    # simple. Or you can use find_packages().
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-    # Define the namespace packages used.
-    namespace_packages=['ckanext'],
-    install_requires=[],
+        namespace_packages=['ckanext'],
+
+    install_requires=[
+      # CKAN extensions should not list dependencies here, but in a separate
+      # ``requirements.txt`` file.
+      #
+      # http://docs.ckan.org/en/latest/extensions/best-practices.html
+      # add-third-party-libraries-to-requirements-txt
+    ],
+
+    # If there are data files included in your packages that need to be
+    # installed, specify them here.  If using Python 2.6 or less, then these
+    # have to be included in MANIFEST.in as well.
     include_package_data=True,
-    # Define additional files to include in the package distribution.
     package_data={
-        'ckanext.thai_gdc': ['ckan_dataset.json'], 
-        'ckanext.cdp': [
-            'templates/*.html',
-            'templates/scheming/*.html',
-            'templates/scheming/form_snippets/*.html',
-            'public/*',
-            'ckan_dataset_cdp.json',
-            'ckan_dataset_original.json'
-        ],
     },
-    # Register the plugin entry point so CKAN can load the plugin.
-    entry_points={
-        'ckan.plugins': [
-            'cdp = ckanext.cdp.plugin:CdpPlugin',
-        ],
-    },
-    # Define how messages are extracted for translation.
+
+    # Although 'package_data' is the preferred approach, in some case you may
+    # need to place data files outside of your packages.
+    # see http://docs.python.org/3.4/distutils/setupscript.html
+    # installing-additional-files
+    # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
+    data_files=[],
+
+    # To provide executable scripts, use entry points in preference to the
+    # "scripts" keyword. Entry points provide cross-platform support and allow
+    # pip to create the appropriate form of executable for the target platform.
+    entry_points='''
+        [ckan.plugins]
+        cdp=ckanext.cdp.plugin:CdpPlugin
+
+        [babel.extractors]
+        ckan = ckan.lib.extract:extract_ckan
+    ''',
+
+    # If you are changing from the default layout of your extension, you may
+    # have to change the message extractors, you can read more about babel
+    # message extraction at
+    # http://babel.pocoo.org/docs/messages/#extraction-method-mapping-and-configuration
     message_extractors={
         'ckanext': [
             ('**.py', 'python', None),
