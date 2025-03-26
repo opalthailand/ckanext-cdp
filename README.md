@@ -1,5 +1,3 @@
-[![Tests](https://github.com/Big Data Institute/ckanext-cdp/workflows/Tests/badge.svg?branch=main)](https://github.com/Big Data Institute/ckanext-cdp/actions)
-
 # ckanext-cdp
 
 **TODO:** Put a description of your extension here:  What does it do? What features does it have? Consider including some screenshots or embedding a video!
@@ -16,10 +14,8 @@ Compatibility with core CKAN versions:
 
 | CKAN version    | Compatible?   |
 | --------------- | ------------- |
-| 2.6 and earlier | not tested    |
-| 2.7             | not tested    |
-| 2.8             | not tested    |
-| 2.9             | not tested    |
+| 2.8 and earlier            | not tested    |
+| 2.9             |   tested    |
 
 Suggested values:
 
