@@ -7,6 +7,21 @@ from ckan.logic.action.create import package_collaborator_create
 from ckan.logic.action.delete import package_collaborator_delete
 
 
+def custom_package_collaborator_create(context, data_dict):
+    """
+    Custom authorization function for package_collaborator_create.
+    Now allows any logged-in user to add a collaborator.
+    Additionally, we set 'ignore_auth' in the context so that the package
+    can be read without triggering standard permission checks.
+    """
+    user = context.get('user')
+    if not user:
+        raise toolkit.NotAuthorized("User not logged in.")
+    # Copy the context and set ignore_auth to True to bypass package read authorization
+    new_context = context.copy()
+    new_context['ignore_auth'] = True
+    return package_collaborator_create(new_context, data_dict)
+
 class CdpPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     # เพิ่ม implements IDatasetForm
@@ -42,11 +57,14 @@ class CdpPlugin(plugins.SingletonPlugin):
             ]
         })
         return schema
+    
+    # IAuthFunctions implementation: override package_collaborator_create
+    def get_auth_functions(self):
+        return {
+            'package_collaborator_create': custom_package_collaborator_create,
+        }
 
-    # --- Implement methods ของ IDatasetForm ---
-    # เราต้อง override method เหล่านี้เพื่อเรียก _modify_package_schema
-    # และเพื่อให้แน่ใจว่า scheming ใช้ schema ที่ถูกต้อง
-
+    # Implement methods ของ IDatasetForm 
     def create_package_schema(self):
         """
         Override schema ที่ใช้ตอนสร้าง dataset
@@ -124,6 +142,10 @@ class CdpPlugin(plugins.SingletonPlugin):
             'user_id': user_id,    # ID ของ user ที่จะเพิ่มเป็น collaborator
             'capacity': 'editor'   # ระดับสิทธิ์ของ collaborator
         }
+
+        # Add collaborator using our custom auth function above
+        custom_package_collaborator_create(context.copy(), data_create)
+                
         # เรียก action เพื่อเพิ่ม collaborator เข้าไปใน dataset; ผลลัพธ์จะถูกเก็บใน result_create
         result_create = package_collaborator_create(context.copy(), data_create)
 
@@ -158,6 +180,10 @@ class CdpPlugin(plugins.SingletonPlugin):
             'user_id': user_id,    # ID ของ user ที่จะเพิ่มเป็น collaborator
             'capacity': 'editor'   # ระดับสิทธิ์ของ collaborator
         }
+
+        # Add collaborator using our custom auth function above
+        custom_package_collaborator_create(context.copy(), data_create)
+
         # เรียก action เพื่อเพิ่ม collaborator เข้าไปใน dataset; ผลลัพธ์จะถูกเก็บใน result_create
         result_create = package_collaborator_create(context, data_create)
 
