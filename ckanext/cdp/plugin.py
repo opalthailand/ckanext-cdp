@@ -7,7 +7,6 @@ import ckan.lib.dictization.model_dictize as model_dictize
 import ckan.logic as logic
 import datetime
 import logging
-from typing import Any
 
 log = logging.getLogger(__name__)
 ValidationError = logic.ValidationError
