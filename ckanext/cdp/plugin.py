@@ -10,17 +10,11 @@ import ckan.logic as logic
 import datetime
 import logging
 from typing import Any
-from flask_babel import gettext as flask_ugettext
 
 log = logging.getLogger(__name__)
 ValidationError = logic.ValidationError
 NotFound = logic.NotFound
 _get_or_bust = logic.get_or_bust
-
-def ugettext(*args: Any, **kwargs: Any) -> str:
-    return flask_ugettext(*args, **kwargs)
-
-_ = ugettext
 
 def package_collaborator_create_any(
         context: Context,
@@ -37,11 +31,11 @@ def package_collaborator_create_any(
 
     package = model.Package.get(package_id)
     if not package:
-        raise NotFound(_('Dataset not found'))
+        raise NotFound('Dataset not found')
 
     user = model.User.get(user_id)
     if not user:
-        raise NotFound(_('User not found'))
+        raise NotFound('User not found')
 
     # Check if collaborator already exists
     collaborator = model.Session.query(model.PackageMember). \
@@ -75,11 +69,11 @@ def package_collaborator_delete_any(context: Context, data_dict: DataDict) -> Ac
 
     package = model.Package.get(package_id)
     if not package:
-        raise NotFound(_('Package not found'))
+        raise NotFound('Package not found')
 
     user = model.User.get(user_id)
     if not user:
-        raise NotFound(_('User not found'))
+        raise NotFound('User not found')
 
     collaborator = model.Session.query(model.PackageMember).\
         filter(model.PackageMember.package_id == package.id).\
