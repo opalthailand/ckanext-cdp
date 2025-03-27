@@ -5,7 +5,6 @@ from ckan import model # Import model เพื่อใช้หา User
 
 from ckan.types.logic import ActionResult
 import ckan.lib.dictization.model_dictize as model_dictize
-from ckan.types import Context, DataDict, ErrorDict, Schema
 import ckan.logic as logic
 import datetime
 import logging
@@ -16,9 +15,7 @@ ValidationError = logic.ValidationError
 NotFound = logic.NotFound
 _get_or_bust = logic.get_or_bust
 
-def package_collaborator_create_any(
-        context: Context,
-        data_dict: DataDict) -> ActionResult.PackageCollaboratorCreate:
+def package_collaborator_create_any(context, data_dict):
     '''Allow anyone to make a user a collaborator in a dataset.
     '''
 
@@ -56,7 +53,7 @@ def package_collaborator_create_any(
     return model_dictize.member_dictize(collaborator, context)
 
 
-def package_collaborator_delete_any(context: Context, data_dict: DataDict) -> ActionResult.PackageCollaboratorDelete:
+def package_collaborator_delete_any(context, data_dict):
     '''Allow anoy to remove a collaborator from a dataset.
     '''
 
