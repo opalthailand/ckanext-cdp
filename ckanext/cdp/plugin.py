@@ -3,7 +3,6 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan import model # Import model เพื่อใช้หา User
 
-from ckan.types.logic import ActionResult
 import ckan.lib.dictization.model_dictize as model_dictize
 import ckan.logic as logic
 import datetime
