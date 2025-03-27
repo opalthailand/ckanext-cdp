@@ -3,11 +3,11 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan import model # Import model เพื่อใช้หา User
 
+# Fix package_collaborator_create and package_collaborator_delete เพื่อให้คนที่สร้าง dataset สามารถเพิ่ม collaborator ได้
 import ckan.lib.dictization.model_dictize as model_dictize
 import ckan.logic as logic
 import datetime
 import logging
-
 log = logging.getLogger(__name__)
 ValidationError = logic.ValidationError
 NotFound = logic.NotFound
@@ -91,11 +91,11 @@ class CdpPlugin(plugins.SingletonPlugin):
     # เพิ่ม implements IPackageController
     plugins.implements(plugins.IPackageController, inherit=True)
 
-    # IConfigurer
+    # IConfigurer: method นี้ใช้สำหรับเพิ่ม template, public directory และ resource ที่จำเป็น
     def update_config(self, config_):
-        toolkit.add_template_directory(config_, 'templates')
-        toolkit.add_public_directory(config_, 'public')
-        toolkit.add_resource('fanstatic','cdp')
+        toolkit.add_template_directory(config_, 'templates')  # ระบุโฟลเดอร์ templates ให้ CKAN รู้จัก
+        toolkit.add_public_directory(config_, 'public')        # ระบุโฟลเดอร์ public สำหรับไฟล์ static
+        toolkit.add_resource('fanstatic','cdp')                # ระบุ resource สำหรับ fanstatic
 
         # เพิ่มบรรทัดนี้เพื่อเปิดใช้งาน Collaborators
         config_['ckan.auth.allow_dataset_collaborators'] = 'true'
@@ -185,17 +185,16 @@ class CdpPlugin(plugins.SingletonPlugin):
     # IPackageController implementation
     def after_create(self, context, res_dict):
         """
-        Callback executed after a dataset is created.
-
-        If the custom field 'data_cdp' is set to 'yes', this function adds user 'cdp_user'
-        as an editor collaborator to the dataset.
+        Callback ที่ถูกเรียกหลังจากสร้าง dataset แล้ว
+        หากฟิลด์ 'data_cdp' ถูกตั้งเป็น 'yes' จะเพิ่ม user 'cdp_user'
+        เป็น editor collaborator ให้กับ dataset นั้น
         """
         # ดึงข้อมูล user object จากชื่อ 'cdp_user' และดึง package ID จาก dictionary ผลลัพธ์ของการสร้าง dataset
         user = model.User.get("cdp_user")
         user_id = user.id
         package_id = res_dict.get('id')
 
-        # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_create
+        # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_create_any
         data_create = {
             'id': package_id,      # ID ของ dataset ที่จะเพิ่ม collaborator
             'user_id': user_id,    # ID ของ user ที่จะเพิ่มเป็น collaborator
@@ -206,7 +205,7 @@ class CdpPlugin(plugins.SingletonPlugin):
 
         # ตรวจสอบว่าค่า res_dict.get('data_cdp') ไม่ใช่ 'yes'
         if res_dict.get('data_cdp') != 'yes':
-            # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_delete
+            # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_delete_any
             data_delete = {
                 'id': package_id,      # ID ของ dataset ที่จะลบ collaborator ออก
                 'user_id': user_id     # ID ของ user ที่จะถูกลบออกจากการเป็น collaborator
@@ -219,17 +218,15 @@ class CdpPlugin(plugins.SingletonPlugin):
 
     def after_update(self, context, pkg_dict):
         """
-        Callback executed after a dataset is updated.
-
-        Similar to after_create, it checks the 'data_cdp' field and adds or removes
-        user 'cdp_user' as a collaborator accordingly.
+        Callback ที่ถูกเรียกหลังจากแก้ไข dataset
+        ตรวจสอบฟิลด์ 'data_cdp' แล้วเพิ่มหรือลบ user 'cdp_user' ตามค่าที่เลือก
         """
         # ดึงข้อมูล user object จากชื่อ 'cdp_user' และดึง package ID จาก dictionary ผลลัพธ์ของการสร้าง dataset
         user = model.User.get("cdp_user")
         user_id = user.id
         package_id = pkg_dict.get('id')
 
-        # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_create
+        # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_create_any
         data_create = {
             'id': package_id,      # ID ของ dataset ที่จะเพิ่ม collaborator
             'user_id': user_id,    # ID ของ user ที่จะเพิ่มเป็น collaborator
@@ -240,7 +237,7 @@ class CdpPlugin(plugins.SingletonPlugin):
 
         # ตรวจสอบว่าค่า pkg_dict.get('data_cdp') ไม่ใช่ 'yes'
         if pkg_dict.get('data_cdp') != 'yes':
-            # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_delete
+            # เตรียมข้อมูล dictionary สำหรับใช้กับ action package_collaborator_delete_any
             data_delete = {
                 'id': package_id,      # ID ของ dataset ที่จะลบ collaborator ออก
                 'user_id': user_id     # ID ของ user ที่จะถูกลบออกจากการเป็น collaborator

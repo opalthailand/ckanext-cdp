@@ -6,7 +6,7 @@ import codecs
 
 def load_original_schema():
     """
-    โหลด schema ของ dataset จาก extension thai_gdc
+    โหลด schema ของ dataset จาก extension thai_gdc โดยอ่านไฟล์ ckan_dataset.json จาก package ckanext.thai_gdc
     """
     schema_path = pkg_resources.resource_filename('ckanext.thai_gdc', 'ckan_dataset.json')
     with codecs.open(schema_path, encoding='utf-8') as f:
@@ -15,7 +15,7 @@ def load_original_schema():
 
 def merge_custom_field(schema):
     """
-    รวมฟิลด์ custom 'data_cdp' เข้ากับ schema เดิม
+    รวมฟิลด์ custom 'data_cdp' เข้ากับ schema เดิม โดยเพิ่มฟิลด์นี้เข้าไปใน 'dataset_fields' ถ้ายังไม่มีอยู่
     """
     custom_field = {
         "field_name": "data_cdp",
@@ -47,7 +47,7 @@ def merge_custom_field(schema):
 
 def serialize_schema(data):
     """
-    แปลงข้อมูล schema ให้อยู่ในรูปแบบที่สามารถ serialize เป็น JSON ได้
+    แปลงข้อมูล schema ให้อยู่ในรูปแบบที่สามารถ serialize เป็น JSON ได้ โดยมีการตรวจสอบ type ของข้อมูลและจัดการ conversion ให้เหมาะสม
     """
     if isinstance(data, dict):
         return {serialize_schema(key): serialize_schema(value) for key, value in data.iteritems()}
